@@ -12,7 +12,7 @@ type RootProps = React.HTMLAttributes<HTMLDivElement>;
 type ContextValue = {
   register: (id: string) => void;
   unregister: (id: string) => void;
-  orderRegister: (el: HTMLInputElement | null) => void;
+  orderRegister: (el: HTMLInputElement) => void;
   onFieldChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   values: Record<string, string>;
 };
@@ -26,7 +26,7 @@ const OtpInputContext = createContext<ContextValue>({
 });
 
 function Root(props: RootProps) {
-  const elements: (HTMLInputElement | null)[] = [];
+  const elements: HTMLInputElement[] = [];
 
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -42,7 +42,7 @@ function Root(props: RootProps) {
     });
   }, []);
 
-  const orderRegister = (el: HTMLInputElement | null) => {
+  const orderRegister = (el: HTMLInputElement) => {
     if (!elements.includes(el)) {
       elements.push(el);
     }
@@ -53,8 +53,28 @@ function Root(props: RootProps) {
     return elements[index + 1];
   };
 
+  const deleteValue = (element: HTMLInputElement) => {
+    setValues((prev) => {
+      const curr = { ...prev };
+      const valueArray = elements
+        .map((el) => (el === element ? "" : curr[el.id]))
+        .filter((value) => value);
+      elements.forEach((el, index) => {
+        curr[el.id] = valueArray[index] || "";
+      });
+
+      return curr;
+    });
+  };
+
   const onFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
+
+    if (!value) {
+      deleteValue(event.target);
+      return;
+    }
+
     setValues((prev) => ({ ...prev, [id]: value }));
 
     if (value) {
@@ -81,7 +101,7 @@ function Field() {
     useContext(OtpInputContext);
 
   useEffect(() => {
-    orderRegister(ref.current);
+    if (ref.current) orderRegister(ref.current);
   }, [orderRegister]);
 
   useEffect(() => {
