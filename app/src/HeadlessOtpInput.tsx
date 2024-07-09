@@ -13,16 +13,18 @@ type ContextValue = {
   register: (id: string) => void;
   unregister: (id: string) => void;
   orderRegister: (el: HTMLInputElement) => void;
-  onFieldChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   values: Record<string, string>;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const OtpInputContext = createContext<ContextValue>({
   register: () => {},
   unregister: () => {},
   orderRegister: () => {},
-  onFieldChange: () => {},
   values: {},
+  onChange: () => {},
+  onKeyDown: () => {},
 });
 
 function Root(props: RootProps) {
@@ -48,9 +50,31 @@ function Root(props: RootProps) {
     }
   };
 
-  const getNextElement = (currentElement: HTMLInputElement) => {
-    const index = elements.indexOf(currentElement);
+  const getNextElement = (currEl: HTMLInputElement) => {
+    const index = elements.indexOf(currEl);
     return elements[index + 1];
+  };
+
+  const hasValueAfter = (currEl: HTMLInputElement) => {
+    const index = elements.indexOf(currEl);
+    if (index < 0) {
+      throw new Error("Input index not found on hasValueAfter");
+    }
+
+    return elements
+      .slice(index + 1)
+      .map((el) => values[el.id])
+      .some((value) => value);
+  };
+
+  const focusPrevious = (currEl: HTMLInputElement) => {
+    const index = elements.indexOf(currEl);
+    if (index < 0) {
+      throw new Error("Input index not found on focusPrevious");
+    }
+
+    const previousElement = elements[Math.max(index - 1, 0)];
+    previousElement.focus();
   };
 
   const deleteValue = (element: HTMLInputElement) => {
@@ -67,14 +91,8 @@ function Root(props: RootProps) {
     });
   };
 
-  const onFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
-
-    if (!value) {
-      deleteValue(event.target);
-      return;
-    }
-
     setValues((prev) => ({ ...prev, [id]: value }));
 
     if (value) {
@@ -85,9 +103,37 @@ function Root(props: RootProps) {
     }
   };
 
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const currEl = event.currentTarget;
+    if (event.key === "Backspace") {
+      // press delete where the input is empty
+      if (!currEl.value) {
+        const index = elements.indexOf(currEl);
+        if (index > 0) {
+          deleteValue(elements[index - 1]);
+          focusPrevious(currEl);
+        }
+        return;
+      }
+      // press delete where the input has value after
+      if (hasValueAfter(currEl)) {
+        event.preventDefault();
+        deleteValue(currEl);
+        focusPrevious(currEl);
+      }
+    }
+  };
+
   return (
     <OtpInputContext.Provider
-      value={{ register, unregister, orderRegister, onFieldChange, values }}
+      value={{
+        register,
+        unregister,
+        orderRegister,
+        values,
+        onChange,
+        onKeyDown,
+      }}
     >
       <div {...props}>{props.children}</div>
     </OtpInputContext.Provider>
@@ -97,7 +143,7 @@ function Root(props: RootProps) {
 function Field() {
   const id = useId();
   const ref = useRef<HTMLInputElement>(null);
-  const { register, unregister, orderRegister, onFieldChange, values } =
+  const { register, unregister, orderRegister, values, onChange, onKeyDown } =
     useContext(OtpInputContext);
 
   useEffect(() => {
@@ -114,7 +160,8 @@ function Field() {
       id={id}
       ref={ref}
       value={values[id] || ""}
-      onChange={onFieldChange}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
     />
   );
 }
