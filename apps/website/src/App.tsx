@@ -1,4 +1,4 @@
-import * as OtpInput from "./HeadlessOtpInput";
+import * as OtpInput from "headless-otp-input";
 
 function App() {
   return (

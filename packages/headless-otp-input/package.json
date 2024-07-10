@@ -1,0 +1,33 @@
+{
+  "name": "headless-otp-input",
+  "version": "1.0.0",
+  "author": "TuanNT <martingk111@gmail.com>",
+  "description": "",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsup --watch --dts",
+    "build": "tsup"
+  },
+  "keywords": [
+    "react",
+    "otp",
+    "input"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.5.3"
+  },
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0",
+    "react-dom": "^16.8 || ^17.0 || ^18.0"
+  }
+}
