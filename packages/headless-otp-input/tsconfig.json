@@ -10,7 +10,7 @@
     "removeComments": false,
     "strict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": true
   },
   "include": ["src"]
 }

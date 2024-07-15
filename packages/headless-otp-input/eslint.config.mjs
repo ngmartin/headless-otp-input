@@ -1,16 +1,16 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
-import { fixupPluginRules } from "@eslint/compat";
-import eslintPluginReact from "eslint-plugin-react";
-import eslintPluginReactHooks from "eslint-plugin-react-hooks";
-import eslintConfigPrettier from "eslint-config-prettier";
+import globals from 'globals'
+import pluginJs from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import { fixupPluginRules } from '@eslint/compat'
+import eslintPluginReact from 'eslint-plugin-react'
+import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
+import eslintConfigPrettier from 'eslint-config-prettier'
 
 export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
-  { ignores: ["dist/*"] },
+  { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
+  { ignores: ['dist/*'] },
   {
     languageOptions: {
       parserOptions: { ecmaFeatures: { jsx: true } },
@@ -20,7 +20,7 @@ export default [
   {
     plugins: {
       react: eslintPluginReact,
-      "react-hooks": fixupPluginRules(eslintPluginReactHooks),
+      'react-hooks': fixupPluginRules(eslintPluginReactHooks),
     },
   },
   {
@@ -29,4 +29,4 @@ export default [
     },
   },
   eslintConfigPrettier,
-];
+]

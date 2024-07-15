@@ -6,17 +6,17 @@ import React, {
   useState,
   useId,
   useCallback,
-} from "react";
+} from 'react'
 
-type RootProps = React.HTMLAttributes<HTMLDivElement>;
+type RootProps = React.HTMLAttributes<HTMLDivElement>
 type ContextValue = {
-  register: (id: string) => void;
-  unregister: (id: string) => void;
-  orderRegister: (el: HTMLInputElement) => void;
-  values: Record<string, string>;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
-};
+  register: (id: string) => void
+  unregister: (id: string) => void
+  orderRegister: (el: HTMLInputElement) => void
+  values: Record<string, string>
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
+}
 
 const OtpInputContext = createContext<ContextValue>({
   register: () => {},
@@ -25,104 +25,104 @@ const OtpInputContext = createContext<ContextValue>({
   values: {},
   onChange: () => {},
   onKeyDown: () => {},
-});
+})
 
 function Root(props: RootProps) {
-  const elements: HTMLInputElement[] = [];
+  const elements: HTMLInputElement[] = []
 
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string>>({})
 
   const register = useCallback((id: string) => {
-    setValues((prev) => ({ ...prev, [id]: "" }));
-  }, []);
+    setValues((prev) => ({ ...prev, [id]: '' }))
+  }, [])
 
   const unregister = useCallback((id: string) => {
     setValues((prev) => {
-      const curr = { ...prev };
-      delete curr[id];
-      return curr;
-    });
-  }, []);
+      const curr = { ...prev }
+      delete curr[id]
+      return curr
+    })
+  }, [])
 
   const orderRegister = (el: HTMLInputElement) => {
     if (!elements.includes(el)) {
-      elements.push(el);
+      elements.push(el)
     }
-  };
+  }
 
   const getNextElement = (currEl: HTMLInputElement) => {
-    const index = elements.indexOf(currEl);
-    return elements[index + 1];
-  };
+    const index = elements.indexOf(currEl)
+    return elements[index + 1]
+  }
 
   const hasValueAfter = (currEl: HTMLInputElement) => {
-    const index = elements.indexOf(currEl);
+    const index = elements.indexOf(currEl)
     if (index < 0) {
-      throw new Error("Input index not found on hasValueAfter");
+      throw new Error('Input index not found on hasValueAfter')
     }
 
     return elements
       .slice(index + 1)
       .map((el) => values[el.id])
-      .some((value) => value);
-  };
+      .some((value) => value)
+  }
 
   const focusPrevious = (currEl: HTMLInputElement) => {
-    const index = elements.indexOf(currEl);
+    const index = elements.indexOf(currEl)
     if (index < 0) {
-      throw new Error("Input index not found on focusPrevious");
+      throw new Error('Input index not found on focusPrevious')
     }
 
-    const previousElement = elements[Math.max(index - 1, 0)];
-    previousElement.focus();
-  };
+    const previousElement = elements[Math.max(index - 1, 0)]
+    previousElement.focus()
+  }
 
   const deleteValue = (element: HTMLInputElement) => {
     setValues((prev) => {
-      const curr = { ...prev };
+      const curr = { ...prev }
       const valueArray = elements
-        .map((el) => (el === element ? "" : curr[el.id]))
-        .filter((value) => value);
+        .map((el) => (el === element ? '' : curr[el.id]))
+        .filter((value) => value)
       elements.forEach((el, index) => {
-        curr[el.id] = valueArray[index] || "";
-      });
+        curr[el.id] = valueArray[index] || ''
+      })
 
-      return curr;
-    });
-  };
+      return curr
+    })
+  }
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = event.target;
-    setValues((prev) => ({ ...prev, [id]: value }));
+    const { id, value } = event.target
+    setValues((prev) => ({ ...prev, [id]: value }))
 
     if (value) {
-      const nextElement = getNextElement(event.target);
+      const nextElement = getNextElement(event.target)
       if (nextElement) {
-        nextElement.focus();
+        nextElement.focus()
       }
     }
-  };
+  }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const currEl = event.currentTarget;
-    if (event.key === "Backspace") {
+    const currEl = event.currentTarget
+    if (event.key === 'Backspace') {
       // press delete where the input is empty
       if (!currEl.value) {
-        const index = elements.indexOf(currEl);
+        const index = elements.indexOf(currEl)
         if (index > 0) {
-          deleteValue(elements[index - 1]);
-          focusPrevious(currEl);
+          deleteValue(elements[index - 1])
+          focusPrevious(currEl)
         }
-        return;
+        return
       }
       // press delete where the input has value after
       if (hasValueAfter(currEl)) {
-        event.preventDefault();
-        deleteValue(currEl);
-        focusPrevious(currEl);
+        event.preventDefault()
+        deleteValue(currEl)
+        focusPrevious(currEl)
       }
     }
-  };
+  }
 
   return (
     <OtpInputContext.Provider
@@ -137,33 +137,33 @@ function Root(props: RootProps) {
     >
       <div {...props}>{props.children}</div>
     </OtpInputContext.Provider>
-  );
+  )
 }
 
 function Field() {
-  const id = useId();
-  const ref = useRef<HTMLInputElement>(null);
+  const id = useId()
+  const ref = useRef<HTMLInputElement>(null)
   const { register, unregister, orderRegister, values, onChange, onKeyDown } =
-    useContext(OtpInputContext);
+    useContext(OtpInputContext)
 
   useEffect(() => {
-    if (ref.current) orderRegister(ref.current);
-  }, [orderRegister]);
+    if (ref.current) orderRegister(ref.current)
+  }, [orderRegister])
 
   useEffect(() => {
-    register(id);
-    return () => unregister(id);
-  }, [id, register, unregister]);
+    register(id)
+    return () => unregister(id)
+  }, [id, register, unregister])
 
   return (
     <input
       id={id}
       ref={ref}
-      value={values[id] || ""}
+      value={values[id] || ''}
       onChange={onChange}
       onKeyDown={onKeyDown}
     />
-  );
+  )
 }
 
-export { Root, Field };
+export { Root, Field }
