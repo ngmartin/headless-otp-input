@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint'
 import { fixupPluginRules } from '@eslint/compat'
 import eslintPluginReact from 'eslint-plugin-react'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
-import eslintConfigPrettier from 'eslint-config-prettier'
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 export default [
   pluginJs.configs.recommended,
@@ -28,5 +28,5 @@ export default [
       ...eslintPluginReactHooks.configs.recommended.rules,
     },
   },
-  eslintConfigPrettier,
+  eslintPluginPrettierRecommended,
 ]
