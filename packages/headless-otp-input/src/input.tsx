@@ -77,8 +77,6 @@ function Root(props: RootProps) {
     return elements[boundedIndex]
   }
 
-  const getNearestEmptyElement = () => elements.find((el) => !el.value)
-
   const hasValueAfter = (el: HTMLInputElement) => {
     const index = getIndexByElement(el)
     return elements
@@ -94,6 +92,24 @@ function Root(props: RootProps) {
     } else {
       prevEl.focus()
     }
+  }
+
+  const focusNext = (el: HTMLInputElement) => {
+    const nextEl = getNextElement(el)
+    if (nextEl === el) {
+      requestAnimationFrame(() => nextEl.select())
+    } else {
+      nextEl.focus()
+    }
+  }
+
+  const focusNearestEmpty = () => {
+    const nearestEmptyEl = elements.find((el) => !el.value)
+    nearestEmptyEl?.focus()
+  }
+
+  const focusFirst = () => {
+    elements[0].focus()
   }
 
   const deleteValue = (el: HTMLInputElement) => {
@@ -124,6 +140,20 @@ function Root(props: RootProps) {
         deleteValue(el)
         focusPrevious(el)
       }
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      focusPrevious(el)
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      if (el.value) {
+        focusNext(el)
+      }
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      focusFirst()
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      focusNearestEmpty()
     }
   }
 
@@ -152,8 +182,7 @@ function Root(props: RootProps) {
     const { value } = event.currentTarget
     if (!value) {
       event.preventDefault()
-      const nearestEmptyEl = getNearestEmptyElement()
-      nearestEmptyEl?.focus()
+      focusNearestEmpty()
     }
   }
 
