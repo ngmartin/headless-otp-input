@@ -4,7 +4,7 @@
     "target": "es2015",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "lib": ["es2016", "dom"],
+    "lib": ["es2017", "dom"],
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "removeComments": false,

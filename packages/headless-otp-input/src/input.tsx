@@ -8,7 +8,9 @@ import React, {
   useCallback,
 } from 'react'
 
-type RootProps = React.HTMLAttributes<HTMLDivElement>
+type RootProps = {
+  onCompleted?: (value: string[]) => void
+} & React.HTMLAttributes<HTMLDivElement>
 type ContextValue = {
   register: (id: string) => void
   unregister: (id: string) => void
@@ -30,16 +32,17 @@ const OtpInputContext = createContext<ContextValue>({
 })
 
 function Root(props: RootProps) {
+  const { onCompleted = () => {}, children, ...restProps } = props
   const elements: HTMLInputElement[] = []
 
-  const [values, setValues] = useState<Record<string, string>>({})
+  const [elementValues, setElementValues] = useState<Record<string, string>>({})
 
   const register = useCallback((id: string) => {
-    setValues((prev) => ({ ...prev, [id]: '' }))
+    setElementValues((prev) => ({ ...prev, [id]: '' }))
   }, [])
 
   const unregister = useCallback((id: string) => {
-    setValues((prev) => {
+    setElementValues((prev) => {
       const curr = { ...prev }
       delete curr[id]
       return curr
@@ -76,7 +79,7 @@ function Root(props: RootProps) {
     const index = getIndexByElement(el)
     return elements
       .slice(index + 1)
-      .map((el) => values[el.id])
+      .map((el) => elementValues[el.id])
       .some((value) => value)
   }
 
@@ -90,15 +93,14 @@ function Root(props: RootProps) {
   }
 
   const deleteValue = (el: HTMLInputElement) => {
-    setValues((prev) => {
+    setElementValues((prev) => {
       const curr = { ...prev }
-      const valueArray = elements
+      const values = elements
         .map((element) => (element === el ? '' : curr[element.id]))
         .filter((value) => value)
       elements.forEach((element, index) => {
-        curr[element.id] = valueArray[index] || ''
+        curr[element.id] = values[index] || ''
       })
-
       return curr
     })
   }
@@ -126,12 +128,19 @@ function Root(props: RootProps) {
   }
 
   const onInput = (event: React.FormEvent<HTMLInputElement>) => {
-    const { id, value } = event.currentTarget
-    setValues((prev) => ({ ...prev, [id]: value }))
+    const el = event.currentTarget
+    const { id, value } = el
+    setElementValues((prev) => ({ ...prev, [id]: value }))
 
     if (value) {
-      const nextEl = getNextElement(event.currentTarget)
-      nextEl.focus()
+      const nextEl = getNextElement(el)
+      if (nextEl === el) {
+        const values = elements.map((el) => el.value)
+        onCompleted(values)
+        nextEl.blur()
+      } else {
+        nextEl.focus()
+      }
     }
   }
 
@@ -141,13 +150,13 @@ function Root(props: RootProps) {
         register,
         unregister,
         orderRegister,
-        values,
+        values: elementValues,
         onKeyDown,
         onFocus,
         onInput,
       }}
     >
-      <div {...props}>{props.children}</div>
+      <div {...restProps}>{children}</div>
     </OtpInputContext.Provider>
   )
 }
