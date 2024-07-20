@@ -19,6 +19,7 @@ type ContextValue = {
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
   onFocus: (event: React.FocusEvent<HTMLInputElement>) => void
   onInput: (event: React.FormEvent<HTMLInputElement>) => void
+  onMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
 }
 
 const OtpInputContext = createContext<ContextValue>({
@@ -29,6 +30,7 @@ const OtpInputContext = createContext<ContextValue>({
   onKeyDown: () => {},
   onFocus: () => {},
   onInput: () => {},
+  onMouseDown: () => {},
 })
 
 function Root(props: RootProps) {
@@ -74,6 +76,8 @@ function Root(props: RootProps) {
     const boundedIndex = Math.max(index - 1, 0)
     return elements[boundedIndex]
   }
+
+  const getNearestEmptyElement = () => elements.find((el) => !el.value)
 
   const hasValueAfter = (el: HTMLInputElement) => {
     const index = getIndexByElement(el)
@@ -144,6 +148,15 @@ function Root(props: RootProps) {
     }
   }
 
+  const onMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
+    const { value } = event.currentTarget
+    if (!value) {
+      event.preventDefault()
+      const nearestEmptyEl = getNearestEmptyElement()
+      nearestEmptyEl?.focus()
+    }
+  }
+
   return (
     <OtpInputContext.Provider
       value={{
@@ -154,6 +167,7 @@ function Root(props: RootProps) {
         onKeyDown,
         onFocus,
         onInput,
+        onMouseDown,
       }}
     >
       <div {...restProps}>{children}</div>
@@ -172,6 +186,7 @@ function Field() {
     onKeyDown,
     onFocus,
     onInput,
+    onMouseDown,
   } = useContext(OtpInputContext)
 
   useEffect(() => {
@@ -191,6 +206,7 @@ function Field() {
       onKeyDown={onKeyDown}
       onFocus={onFocus}
       onInput={onInput}
+      onMouseDown={onMouseDown}
     />
   )
 }
