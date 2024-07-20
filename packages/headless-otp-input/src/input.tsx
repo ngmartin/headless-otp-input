@@ -14,8 +14,9 @@ type ContextValue = {
   unregister: (id: string) => void
   orderRegister: (el: HTMLInputElement) => void
   values: Record<string, string>
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  onFocus: (event: React.FocusEvent<HTMLInputElement>) => void
+  onInput: (event: React.FormEvent<HTMLInputElement>) => void
 }
 
 const OtpInputContext = createContext<ContextValue>({
@@ -23,8 +24,9 @@ const OtpInputContext = createContext<ContextValue>({
   unregister: () => {},
   orderRegister: () => {},
   values: {},
-  onChange: () => {},
   onKeyDown: () => {},
+  onFocus: () => {},
+  onInput: () => {},
 })
 
 function Root(props: RootProps) {
@@ -50,77 +52,86 @@ function Root(props: RootProps) {
     }
   }
 
-  const getNextElement = (currEl: HTMLInputElement) => {
-    const index = elements.indexOf(currEl)
-    return elements[index + 1]
+  const getIndexByElement = (el: HTMLInputElement) => {
+    const index = elements.indexOf(el)
+    if (index < 0) {
+      throw new Error('Input index not found')
+    }
+    return index
   }
 
-  const hasValueAfter = (currEl: HTMLInputElement) => {
-    const index = elements.indexOf(currEl)
-    if (index < 0) {
-      throw new Error('Input index not found on hasValueAfter')
-    }
+  const getNextElement = (el: HTMLInputElement) => {
+    const index = getIndexByElement(el)
+    const boundedIndex = Math.min(index + 1, elements.length - 1)
+    return elements[boundedIndex]
+  }
 
+  const getPreviousElement = (el: HTMLInputElement) => {
+    const index = getIndexByElement(el)
+    const boundedIndex = Math.max(index - 1, 0)
+    return elements[boundedIndex]
+  }
+
+  const hasValueAfter = (el: HTMLInputElement) => {
+    const index = getIndexByElement(el)
     return elements
       .slice(index + 1)
       .map((el) => values[el.id])
       .some((value) => value)
   }
 
-  const focusPrevious = (currEl: HTMLInputElement) => {
-    const index = elements.indexOf(currEl)
-    if (index < 0) {
-      throw new Error('Input index not found on focusPrevious')
+  const focusPrevious = (el: HTMLInputElement) => {
+    const prevEl = getPreviousElement(el)
+    if (prevEl === el) {
+      requestAnimationFrame(() => prevEl.select())
+    } else {
+      prevEl.focus()
     }
-
-    const previousElement = elements[Math.max(index - 1, 0)]
-    previousElement.focus()
   }
 
-  const deleteValue = (element: HTMLInputElement) => {
+  const deleteValue = (el: HTMLInputElement) => {
     setValues((prev) => {
       const curr = { ...prev }
       const valueArray = elements
-        .map((el) => (el === element ? '' : curr[el.id]))
+        .map((element) => (element === el ? '' : curr[element.id]))
         .filter((value) => value)
-      elements.forEach((el, index) => {
-        curr[el.id] = valueArray[index] || ''
+      elements.forEach((element, index) => {
+        curr[element.id] = valueArray[index] || ''
       })
 
       return curr
     })
   }
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = event.target
-    setValues((prev) => ({ ...prev, [id]: value }))
-
-    if (value) {
-      const nextElement = getNextElement(event.target)
-      if (nextElement) {
-        nextElement.focus()
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const el = event.currentTarget
+    if (event.key === 'Backspace') {
+      // press delete where the input is empty
+      if (!el.value) {
+        deleteValue(getPreviousElement(el))
+        focusPrevious(el)
+        return
+      }
+      // press delete where the input has value after
+      if (hasValueAfter(el)) {
+        event.preventDefault()
+        deleteValue(el)
+        focusPrevious(el)
       }
     }
   }
 
-  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const currEl = event.currentTarget
-    if (event.key === 'Backspace') {
-      // press delete where the input is empty
-      if (!currEl.value) {
-        const index = elements.indexOf(currEl)
-        if (index > 0) {
-          deleteValue(elements[index - 1])
-          focusPrevious(currEl)
-        }
-        return
-      }
-      // press delete where the input has value after
-      if (hasValueAfter(currEl)) {
-        event.preventDefault()
-        deleteValue(currEl)
-        focusPrevious(currEl)
-      }
+  const onFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    event.currentTarget.select()
+  }
+
+  const onInput = (event: React.FormEvent<HTMLInputElement>) => {
+    const { id, value } = event.currentTarget
+    setValues((prev) => ({ ...prev, [id]: value }))
+
+    if (value) {
+      const nextEl = getNextElement(event.currentTarget)
+      nextEl.focus()
     }
   }
 
@@ -131,8 +142,9 @@ function Root(props: RootProps) {
         unregister,
         orderRegister,
         values,
-        onChange,
         onKeyDown,
+        onFocus,
+        onInput,
       }}
     >
       <div {...props}>{props.children}</div>
@@ -143,8 +155,15 @@ function Root(props: RootProps) {
 function Field() {
   const id = useId()
   const ref = useRef<HTMLInputElement>(null)
-  const { register, unregister, orderRegister, values, onChange, onKeyDown } =
-    useContext(OtpInputContext)
+  const {
+    register,
+    unregister,
+    orderRegister,
+    values,
+    onKeyDown,
+    onFocus,
+    onInput,
+  } = useContext(OtpInputContext)
 
   useEffect(() => {
     if (ref.current) orderRegister(ref.current)
@@ -160,8 +179,9 @@ function Field() {
       id={id}
       ref={ref}
       value={values[id] || ''}
-      onChange={onChange}
       onKeyDown={onKeyDown}
+      onFocus={onFocus}
+      onInput={onInput}
     />
   )
 }
