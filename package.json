@@ -9,10 +9,10 @@
   ],
   "packageManager": "pnpm@9.5.0",
   "scripts": {
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "test": "turbo run test"
   },
   "devDependencies": {
-    "tsup": "^8.1.0",
-    "turbo": "^2.0.6"
+    "turbo": "^2.0.9"
   }
 }
