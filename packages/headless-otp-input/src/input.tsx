@@ -11,13 +11,13 @@ import React, {
 type RootProps = {
   onCompleted?: (value: string[]) => void
 } & React.HTMLAttributes<HTMLDivElement>
+type ElementValues = Record<string, string>
 type ContextValue = {
   register: (id: string) => void
   unregister: (id: string) => void
   orderRegister: (el: HTMLInputElement) => void
   values: Record<string, string>
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
-  onFocus: (event: React.FocusEvent<HTMLInputElement>) => void
   onInput: (event: React.FormEvent<HTMLInputElement>) => void
   onMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
 }
@@ -28,7 +28,6 @@ const OtpInputContext = createContext<ContextValue>({
   orderRegister: () => {},
   values: {},
   onKeyDown: () => {},
-  onFocus: () => {},
   onInput: () => {},
   onMouseDown: () => {},
 })
@@ -37,7 +36,7 @@ function Root(props: RootProps) {
   const { onCompleted = () => {}, children, ...restProps } = props
   const elements: HTMLInputElement[] = []
 
-  const [elementValues, setElementValues] = useState<Record<string, string>>({})
+  const [elementValues, setElementValues] = useState<ElementValues>({})
 
   const register = useCallback((id: string) => {
     setElementValues((prev) => ({ ...prev, [id]: '' }))
@@ -85,31 +84,39 @@ function Root(props: RootProps) {
       .some((value) => value)
   }
 
+  const selectElement = (el: HTMLInputElement) => {
+    requestAnimationFrame(() => el.select())
+  }
+
   const focusPrevious = (el: HTMLInputElement) => {
     const prevEl = getPreviousElement(el)
-    if (prevEl === el) {
-      requestAnimationFrame(() => prevEl.select())
-    } else {
-      prevEl.focus()
-    }
+    prevEl.focus()
+    selectElement(prevEl)
   }
 
   const focusNext = (el: HTMLInputElement) => {
     const nextEl = getNextElement(el)
-    if (nextEl === el) {
-      requestAnimationFrame(() => nextEl.select())
-    } else {
-      nextEl.focus()
-    }
-  }
-
-  const focusNearestEmpty = () => {
-    const nearestEmptyEl = elements.find((el) => !el.value)
-    nearestEmptyEl?.focus()
+    nextEl.focus()
+    selectElement(nextEl)
   }
 
   const focusFirst = () => {
-    elements[0].focus()
+    const el = elements[0]
+    el.focus()
+    selectElement(el)
+  }
+
+  const focusLast = () => {
+    const el = elements[elements.length - 1]
+    el.focus()
+    selectElement(el)
+  }
+
+  const focusNearestEmptyOrLast = (elValues: ElementValues) => {
+    const emptyIndex = elements.findIndex((el) => !elValues[el.id])
+    if (emptyIndex < 0) return focusLast()
+    if (emptyIndex === 0) return focusFirst()
+    focusNext(elements[emptyIndex - 1])
   }
 
   const deleteValue = (el: HTMLInputElement) => {
@@ -153,36 +160,42 @@ function Root(props: RootProps) {
       focusFirst()
     } else if (event.key === 'ArrowDown') {
       event.preventDefault()
-      focusNearestEmpty()
+      focusNearestEmptyOrLast(elementValues)
     }
-  }
-
-  const onFocus = (event: React.FocusEvent<HTMLInputElement>) => {
-    event.currentTarget.select()
   }
 
   const onInput = (event: React.FormEvent<HTMLInputElement>) => {
     const el = event.currentTarget
     const { id, value } = el
-    setElementValues((prev) => ({ ...prev, [id]: value }))
 
-    if (value) {
-      const nextEl = getNextElement(el)
-      if (nextEl === el) {
-        const values = elements.map((el) => el.value)
-        onCompleted(values)
-        nextEl.blur()
-      } else {
-        nextEl.focus()
-      }
+    if (!value) {
+      return setElementValues((prev) => ({ ...prev, [id]: '' }))
+    }
+
+    const values = value.split('')
+    const newElementValues = { ...elementValues }
+    const startIndex = getIndexByElement(el)
+    const endIndex = Math.min(startIndex + values.length, elements.length)
+
+    elements.slice(startIndex, endIndex).forEach((element, index) => {
+      newElementValues[element.id] = values[index]
+    })
+
+    setElementValues(newElementValues)
+    focusNext(elements[endIndex - 1])
+
+    if (Object.values(newElementValues).every((value) => value)) {
+      onCompleted(Object.values(newElementValues))
     }
   }
 
   const onMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
-    const { value } = event.currentTarget
-    if (!value) {
+    const el = event.currentTarget
+    if (!el.value) {
       event.preventDefault()
-      focusNearestEmpty()
+      focusNearestEmptyOrLast(elementValues)
+    } else {
+      selectElement(el)
     }
   }
 
@@ -194,7 +207,6 @@ function Root(props: RootProps) {
         orderRegister,
         values: elementValues,
         onKeyDown,
-        onFocus,
         onInput,
         onMouseDown,
       }}
@@ -213,7 +225,6 @@ function Field() {
     orderRegister,
     values,
     onKeyDown,
-    onFocus,
     onInput,
     onMouseDown,
   } = useContext(OtpInputContext)
@@ -233,7 +244,6 @@ function Field() {
       ref={ref}
       value={values[id] || ''}
       onKeyDown={onKeyDown}
-      onFocus={onFocus}
       onInput={onInput}
       onMouseDown={onMouseDown}
     />
