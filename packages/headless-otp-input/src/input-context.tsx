@@ -10,14 +10,16 @@ type ContextValue = {
   onMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
 }
 
+const noop = () => {}
+
 const initContextValue: ContextValue = {
-  register: () => {},
-  unregister: () => {},
-  orderRegister: () => {},
   values: {},
-  onKeyDown: () => {},
-  onInput: () => {},
-  onMouseDown: () => {},
+  register: noop,
+  unregister: noop,
+  orderRegister: noop,
+  onKeyDown: noop,
+  onInput: noop,
+  onMouseDown: noop,
 }
 
 const InputContext = createContext<ContextValue>(initContextValue)

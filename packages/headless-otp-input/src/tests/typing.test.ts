@@ -16,13 +16,6 @@ describe('Typing Testing', () => {
     expect(inputs.map((input) => input.value)).toEqual(text)
   })
 
-  test('should focus the next input after typing', async () => {
-    render(renderInput({ numOfInputs: 6 }))
-    const inputs = screen.getAllByRole('textbox')
-    await userEvent.type(inputs[0], '1')
-    expect(inputs[1]).toHaveFocus()
-  })
-
   test('should paste the text in the input', async () => {
     render(renderInput({ numOfInputs: 6 }))
     const text = '123456'.split('')

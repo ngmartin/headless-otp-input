@@ -5,6 +5,13 @@ import { renderInput } from './utils'
 
 // Todo: refactor this after having the default value prop
 describe('Navigation Testing', () => {
+  test('should focus the next input after typing', async () => {
+    render(renderInput({ numOfInputs: 6 }))
+    const inputs = screen.getAllByRole('textbox')
+    await userEvent.type(inputs[0], '1')
+    expect(inputs[1]).toHaveFocus()
+  })
+
   test('should allow ArrowRight', async () => {
     render(renderInput({ numOfInputs: 6 }))
     const inputs = screen.getAllByRole('textbox')

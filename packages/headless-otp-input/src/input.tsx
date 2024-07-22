@@ -2,12 +2,18 @@ import React, { useEffect, useRef, useState, useId, useCallback } from 'react'
 import { InputProvider, useInputContext } from './input-context'
 
 type RootProps = {
-  onCompleted?: (value: string[]) => void
+  blurOnCompleted?: boolean
+  onCompleted?: (value: string) => void
 } & React.HTMLAttributes<HTMLDivElement>
 type ElementValues = Record<string, string>
 
 function Root(props: RootProps) {
-  const { onCompleted = () => {}, children, ...restProps } = props
+  const {
+    onCompleted = () => {},
+    blurOnCompleted = true,
+    children,
+    ...restProps
+  } = props
   const elements: HTMLInputElement[] = []
 
   const [elementValues, setElementValues] = useState<ElementValues>({})
@@ -57,6 +63,12 @@ function Root(props: RootProps) {
       .map((el) => elementValues[el.id])
       .some((value) => value)
   }
+
+  const hasCompleted = (values: ElementValues) =>
+    Object.values(values).every((value) => value)
+
+  const elementValuesToString = (values: ElementValues) =>
+    elements.map((el) => values[el.id]).join('')
 
   const selectElement = (el: HTMLInputElement) => {
     requestAnimationFrame(() => el.select())
@@ -154,13 +166,17 @@ function Root(props: RootProps) {
     elements.slice(startIndex, endIndex).forEach((element, index) => {
       newElementValues[element.id] = values[index]
     })
-
     setElementValues(newElementValues)
-    focusNext(elements[endIndex - 1])
 
-    if (Object.values(newElementValues).every((value) => value)) {
-      onCompleted(Object.values(newElementValues))
+    if (hasCompleted(newElementValues)) {
+      onCompleted(elementValuesToString(newElementValues))
+      if (blurOnCompleted) {
+        el.blur()
+        return
+      }
     }
+
+    focusNext(elements[endIndex - 1])
   }
 
   const onMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
