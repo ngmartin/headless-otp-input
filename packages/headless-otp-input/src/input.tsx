@@ -1,36 +1,10 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useId,
-  useCallback,
-} from 'react'
+import React, { useEffect, useRef, useState, useId, useCallback } from 'react'
+import { InputProvider, useInputContext } from './input-context'
 
 type RootProps = {
   onCompleted?: (value: string[]) => void
 } & React.HTMLAttributes<HTMLDivElement>
 type ElementValues = Record<string, string>
-type ContextValue = {
-  register: (id: string) => void
-  unregister: (id: string) => void
-  orderRegister: (el: HTMLInputElement) => void
-  values: Record<string, string>
-  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
-  onInput: (event: React.FormEvent<HTMLInputElement>) => void
-  onMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
-}
-
-const OtpInputContext = createContext<ContextValue>({
-  register: () => {},
-  unregister: () => {},
-  orderRegister: () => {},
-  values: {},
-  onKeyDown: () => {},
-  onInput: () => {},
-  onMouseDown: () => {},
-})
 
 function Root(props: RootProps) {
   const { onCompleted = () => {}, children, ...restProps } = props
@@ -200,7 +174,7 @@ function Root(props: RootProps) {
   }
 
   return (
-    <OtpInputContext.Provider
+    <InputProvider
       value={{
         register,
         unregister,
@@ -212,7 +186,7 @@ function Root(props: RootProps) {
       }}
     >
       <div {...restProps}>{children}</div>
-    </OtpInputContext.Provider>
+    </InputProvider>
   )
 }
 
@@ -227,7 +201,7 @@ function Field() {
     onKeyDown,
     onInput,
     onMouseDown,
-  } = useContext(OtpInputContext)
+  } = useInputContext()
 
   useEffect(() => {
     if (ref.current) orderRegister(ref.current)
