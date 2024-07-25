@@ -62,37 +62,6 @@ describe('Navigation Testing', () => {
     expect(inputs[text.length - 1]).toHaveFocus()
   })
 
-  test('should not allow ArrowRight while empty', async () => {
-    render(renderInput({ numOfInputs: 6 }))
-    const inputs = screen.getAllByRole('textbox')
-
-    await userEvent.type(inputs[0], '1')
-    await userEvent.keyboard('[ArrowRight]')
-    await userEvent.keyboard('[ArrowRight]')
-
-    expect(inputs[1]).toHaveFocus()
-  })
-
-  test('should not allow ArrowDown to the end while empty', async () => {
-    render(renderInput({ numOfInputs: 6 }))
-    const inputs = screen.getAllByRole('textbox')
-
-    await userEvent.type(inputs[0], '1')
-    await userEvent.click(inputs[0])
-    await userEvent.keyboard('[ArrowDown]')
-
-    expect(inputs[1]).toHaveFocus()
-  })
-
-  test('should not allow focusing on the next item while empty', async () => {
-    render(renderInput({ numOfInputs: 6 }))
-    const inputs = screen.getAllByRole('textbox')
-
-    await userEvent.click(inputs[inputs.length - 1])
-
-    expect(inputs[0]).toHaveFocus()
-  })
-
   test('should select text on focus', async () => {
     render(renderInput({ numOfInputs: 6 }))
     const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]

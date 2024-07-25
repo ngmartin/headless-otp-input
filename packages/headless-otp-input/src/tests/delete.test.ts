@@ -26,21 +26,4 @@ describe('Delete Character Testing', () => {
 
     expect(inputs[0]).toHaveValue('')
   })
-
-  test('should rearrange the input values on backspace', async () => {
-    render(renderInput({ numOfInputs: 6 }))
-    const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
-    const text = '123456'.split('')
-
-    for (const [index, input] of inputs.entries()) {
-      await userEvent.type(input, text[index])
-    }
-    await userEvent.click(inputs[2])
-    await userEvent.keyboard('[Backspace]')
-
-    expect(inputs[1]).toHaveFocus()
-    expect(inputs.map((input) => input.value)).toEqual(
-      text.filter((_, i) => i !== 2).concat([''])
-    )
-  })
 })

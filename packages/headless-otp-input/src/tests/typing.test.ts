@@ -50,8 +50,4 @@ describe('Typing Testing', () => {
 
     expect(inputs.map((input) => input.value)).toEqual(text.slice(0, 6))
   })
-
-  test('should not allow more than 1 char in the input', async () => {
-    // Todo: Implement this test after have default value prop
-  })
 })

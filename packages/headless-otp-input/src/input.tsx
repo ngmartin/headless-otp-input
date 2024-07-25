@@ -31,9 +31,12 @@ function Root(props: RootProps) {
   }, [])
 
   const orderRegister = (el: HTMLInputElement) => {
-    if (!elements.includes(el)) {
+    const index = elements.indexOf(el)
+    if (index < 0) {
       elements.push(el)
+      return elements.length - 1
     }
+    return index
   }
 
   const getIndexByElement = (el: HTMLInputElement) => {
@@ -54,14 +57,6 @@ function Root(props: RootProps) {
     const index = getIndexByElement(el)
     const boundedIndex = Math.max(index - 1, 0)
     return elements[boundedIndex]
-  }
-
-  const hasValueAfter = (el: HTMLInputElement) => {
-    const index = getIndexByElement(el)
-    return elements
-      .slice(index + 1)
-      .map((el) => elementValues[el.id])
-      .some((value) => value)
   }
 
   const hasCompleted = (values: ElementValues) =>
@@ -98,39 +93,16 @@ function Root(props: RootProps) {
     selectElement(el)
   }
 
-  const focusNearestEmptyOrLast = (elValues: ElementValues) => {
-    const emptyIndex = elements.findIndex((el) => !elValues[el.id])
-    if (emptyIndex < 0) return focusLast()
-    if (emptyIndex === 0) return focusFirst()
-    focusNext(elements[emptyIndex - 1])
-  }
-
   const deleteValue = (el: HTMLInputElement) => {
-    setElementValues((prev) => {
-      const curr = { ...prev }
-      const values = elements
-        .map((element) => (element === el ? '' : curr[element.id]))
-        .filter((value) => value)
-      elements.forEach((element, index) => {
-        curr[element.id] = values[index] || ''
-      })
-      return curr
-    })
+    setElementValues((prev) => ({ ...prev, [el.id]: '' }))
   }
 
-  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const el = event.currentTarget
     if (event.key === 'Backspace') {
       // press delete where the input is empty
       if (!el.value) {
         deleteValue(getPreviousElement(el))
-        focusPrevious(el)
-        return
-      }
-      // press delete where the input has value after
-      if (hasValueAfter(el)) {
-        event.preventDefault()
-        deleteValue(el)
         focusPrevious(el)
       }
     } else if (event.key === 'ArrowLeft') {
@@ -138,33 +110,52 @@ function Root(props: RootProps) {
       focusPrevious(el)
     } else if (event.key === 'ArrowRight') {
       event.preventDefault()
-      if (el.value) {
-        focusNext(el)
-      }
+      focusNext(el)
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
       focusFirst()
     } else if (event.key === 'ArrowDown') {
       event.preventDefault()
-      focusNearestEmptyOrLast(elementValues)
+      focusLast()
     }
   }
 
-  const onInput = (event: React.FormEvent<HTMLInputElement>) => {
+  const handleInput = (event: React.FormEvent<HTMLInputElement>) => {
     const el = event.currentTarget
     const { id, value } = el
+    const newElementValues = { ...elementValues, [id]: value }
+    setElementValues(newElementValues)
 
-    if (!value) {
-      return setElementValues((prev) => ({ ...prev, [id]: '' }))
+    if (hasCompleted(newElementValues)) {
+      onCompleted(elementValuesToString(newElementValues))
+      if (blurOnCompleted) {
+        el.blur()
+        return
+      }
     }
 
-    const values = value.split('')
-    const newElementValues = { ...elementValues }
-    const startIndex = getIndexByElement(el)
-    const endIndex = Math.min(startIndex + values.length, elements.length)
+    if (value) {
+      focusNext(el)
+    }
+  }
 
-    elements.slice(startIndex, endIndex).forEach((element, index) => {
-      newElementValues[element.id] = values[index]
+  const handleMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
+    const el = event.currentTarget
+    if (el.value) {
+      selectElement(el)
+    }
+  }
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    const el = event.currentTarget
+    const pastedData = event.clipboardData.getData('text/plain').split('')
+    const startIndex = elements.indexOf(el)
+    const endIndex = Math.min(startIndex + pastedData.length, elements.length)
+    const newElementValues = { ...elementValues }
+
+    elements.slice(startIndex, endIndex).forEach((el, index) => {
+      newElementValues[el.id] = pastedData[index]
     })
     setElementValues(newElementValues)
 
@@ -176,16 +167,8 @@ function Root(props: RootProps) {
       }
     }
 
-    focusNext(elements[endIndex - 1])
-  }
-
-  const onMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
-    const el = event.currentTarget
-    if (!el.value) {
-      event.preventDefault()
-      focusNearestEmptyOrLast(elementValues)
-    } else {
-      selectElement(el)
+    if (pastedData.length > 0) {
+      focusNext(elements[endIndex - 1])
     }
   }
 
@@ -196,9 +179,10 @@ function Root(props: RootProps) {
         unregister,
         orderRegister,
         values: elementValues,
-        onKeyDown,
-        onInput,
-        onMouseDown,
+        onKeyDown: handleKeyDown,
+        onInput: handleInput,
+        onMouseDown: handleMouseDown,
+        onPaste: handlePaste,
       }}
     >
       <div {...restProps}>{children}</div>
@@ -206,7 +190,9 @@ function Root(props: RootProps) {
   )
 }
 
-function Field() {
+type FieldProps = React.InputHTMLAttributes<HTMLInputElement>
+
+function Field(props: FieldProps) {
   const id = useId()
   const ref = useRef<HTMLInputElement>(null)
   const {
@@ -217,10 +203,15 @@ function Field() {
     onKeyDown,
     onInput,
     onMouseDown,
+    onPaste,
   } = useInputContext()
+  const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    if (ref.current) orderRegister(ref.current)
+    if (ref.current) {
+      const order = orderRegister(ref.current)
+      setIndex(order)
+    }
   }, [orderRegister])
 
   useEffect(() => {
@@ -230,12 +221,19 @@ function Field() {
 
   return (
     <input
+      aria-label={`Please enter OTP character ${index + 1}`}
+      type="text"
+      maxLength={1}
+      autoComplete="one-time-code"
+      inputMode="numeric"
       id={id}
       ref={ref}
       value={values[id] || ''}
       onKeyDown={onKeyDown}
       onInput={onInput}
       onMouseDown={onMouseDown}
+      onPaste={onPaste}
+      {...props}
     />
   )
 }
