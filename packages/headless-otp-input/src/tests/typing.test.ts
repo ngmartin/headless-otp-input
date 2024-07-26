@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { renderInput } from './utils'
+import { renderInput, textToDataTransfer } from './utils'
 
 describe('Typing Testing', () => {
   test('should change the input value', async () => {
@@ -22,7 +22,7 @@ describe('Typing Testing', () => {
     const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
 
     await userEvent.click(inputs[0])
-    await userEvent.paste(text.join(''))
+    await userEvent.paste(textToDataTransfer(text.join('')))
 
     expect(inputs.map((input) => input.value)).toEqual(text)
   })
@@ -33,7 +33,7 @@ describe('Typing Testing', () => {
     const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
 
     await userEvent.click(inputs[0])
-    await userEvent.paste(text.join(''))
+    await userEvent.paste(textToDataTransfer(text.join('')))
 
     expect(inputs.map((input) => input.value)).toEqual(
       text.concat(Array(6 - text.length).fill(''))
@@ -46,7 +46,7 @@ describe('Typing Testing', () => {
     const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
 
     await userEvent.click(inputs[0])
-    await userEvent.paste(text.join(''))
+    await userEvent.paste(textToDataTransfer(text.join('')))
 
     expect(inputs.map((input) => input.value)).toEqual(text.slice(0, 6))
   })
