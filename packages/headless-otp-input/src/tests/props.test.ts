@@ -1,7 +1,7 @@
 import { test, describe, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { renderInput, textToDataTransfer } from './utils'
+import { renderInput } from './utils'
 
 describe('Props Testing', () => {
   test('should blur on completed by default', async () => {
@@ -20,7 +20,7 @@ describe('Props Testing', () => {
     const inputs = screen.getAllByRole('textbox')
 
     await userEvent.click(inputs[0])
-    await userEvent.paste(textToDataTransfer('12'))
+    await userEvent.paste('12')
 
     expect(inputs[0]).not.toHaveFocus()
     expect(inputs[1]).not.toHaveFocus()
@@ -42,7 +42,7 @@ describe('Props Testing', () => {
     const inputs = screen.getAllByRole('textbox')
 
     await userEvent.click(inputs[0])
-    await userEvent.paste(textToDataTransfer('12'))
+    await userEvent.paste('12')
 
     expect(inputs[0]).not.toHaveFocus()
     expect(inputs[1]).toHaveFocus()

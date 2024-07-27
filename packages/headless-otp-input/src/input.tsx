@@ -123,39 +123,17 @@ function Root(props: RootProps) {
   const handleInput = (event: React.FormEvent<HTMLInputElement>) => {
     const el = event.currentTarget
     const { id, value } = el
-    const newElementValues = { ...elementValues, [id]: value }
-    setElementValues(newElementValues)
 
-    if (hasCompleted(newElementValues)) {
-      onCompleted(elementValuesToString(newElementValues))
-      if (blurOnCompleted) {
-        el.blur()
-        return
-      }
+    if (!value) {
+      setElementValues((prev) => ({ ...prev, [id]: '' }))
+      return
     }
 
-    if (value) {
-      focusNext(el)
-    }
-  }
-
-  const handleMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
-    const el = event.currentTarget
-    if (el.value) {
-      selectElement(el)
-    }
-  }
-
-  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    const el = event.currentTarget
-    const pastedData = event.clipboardData.getData('text/plain').split('')
-    const startIndex = elements.indexOf(el)
-    const endIndex = Math.min(startIndex + pastedData.length, elements.length)
     const newElementValues = { ...elementValues }
-
+    const startIndex = elements.indexOf(el)
+    const endIndex = Math.min(startIndex + value.length, elements.length)
     elements.slice(startIndex, endIndex).forEach((el, index) => {
-      newElementValues[el.id] = pastedData[index]
+      newElementValues[el.id] = value[index]
     })
     setElementValues(newElementValues)
 
@@ -166,9 +144,13 @@ function Root(props: RootProps) {
         return
       }
     }
+    focusNext(elements[endIndex - 1])
+  }
 
-    if (pastedData.length > 0) {
-      focusNext(elements[endIndex - 1])
+  const handleMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
+    const el = event.currentTarget
+    if (el.value) {
+      selectElement(el)
     }
   }
 
@@ -182,7 +164,6 @@ function Root(props: RootProps) {
         onKeyDown: handleKeyDown,
         onInput: handleInput,
         onMouseDown: handleMouseDown,
-        onPaste: handlePaste,
       }}
     >
       <div {...restProps}>{children}</div>
@@ -203,7 +184,6 @@ function Field(props: FieldProps) {
     onKeyDown,
     onInput,
     onMouseDown,
-    onPaste,
   } = useInputContext()
   const [index, setIndex] = useState(0)
 
@@ -223,7 +203,6 @@ function Field(props: FieldProps) {
     <input
       aria-label={`Please enter OTP character ${index + 1}`}
       type="text"
-      maxLength={1}
       autoComplete="one-time-code"
       inputMode="numeric"
       id={id}
@@ -232,7 +211,6 @@ function Field(props: FieldProps) {
       onKeyDown={onKeyDown}
       onInput={onInput}
       onMouseDown={onMouseDown}
-      onPaste={onPaste}
       {...props}
     />
   )

@@ -8,7 +8,6 @@ type ContextValue = {
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
   onInput: (event: React.FormEvent<HTMLInputElement>) => void
   onMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
-  onPaste: (event: React.ClipboardEvent<HTMLInputElement>) => void
 }
 
 const noop = () => {}
@@ -21,7 +20,6 @@ const initContextValue: ContextValue = {
   onKeyDown: noop,
   onInput: noop,
   onMouseDown: noop,
-  onPaste: noop,
 }
 
 const InputContext = createContext<ContextValue>(initContextValue)
