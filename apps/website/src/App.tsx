@@ -5,7 +5,6 @@ function App() {
     <>
       <h1>headless-otp-input</h1>
       <OtpInput.Root
-        blurOnCompleted={false}
         onCompleted={(value) => console.log("onCompleted:", value)}
       >
         <OtpInput.Field />

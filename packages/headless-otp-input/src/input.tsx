@@ -2,16 +2,31 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { InputProvider, useInputContext } from './input-context'
 
 type RootProps = {
+  defaultValue?: string
   blurOnCompleted?: boolean
   onCompleted?: (value: string) => void
 } & React.HTMLAttributes<HTMLDivElement>
 
 function Root(props: RootProps) {
-  const { onCompleted = () => {}, blurOnCompleted = true, ...restProps } = props
+  const {
+    onCompleted = () => {},
+    blurOnCompleted = false,
+    defaultValue,
+    ...restProps
+  } = props
 
   const [inputRefs, setInputRefs] = useState<HTMLInputElement[]>([])
   const [inputValues, setInputValues] = useState<string[]>([])
   const numberOfInputs = inputRefs.length
+
+  useEffect(() => {
+    const initialValues = defaultValue
+      ? defaultValue.split('').slice(0, numberOfInputs)
+      : new Array<string>(numberOfInputs).fill('')
+    setInputValues(initialValues)
+    // defaultValue is uncontrolled prop, we don't need to re-run if defaultValue changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numberOfInputs])
 
   const register = useCallback((el: HTMLInputElement) => {
     setInputRefs((prev) => [...prev, el])
@@ -43,8 +58,6 @@ function Root(props: RootProps) {
 
   const hasCompleted = (values: string[]) =>
     values.filter(Boolean).length === inputRefs.length
-
-  const elementValuesToString = (values: string[]) => values.join('')
 
   const selectElement = (el: HTMLInputElement) => {
     requestAnimationFrame(() => el.select())
@@ -121,7 +134,7 @@ function Root(props: RootProps) {
     setInputValues(newInputValues)
 
     if (hasCompleted(newInputValues)) {
-      onCompleted(elementValuesToString(newInputValues))
+      onCompleted(newInputValues.join(''))
       if (blurOnCompleted) {
         el.blur()
         return
