@@ -35,11 +35,11 @@ describe('Props Testing', () => {
     await userEvent.type(inputs[1], '2')
 
     expect(onCompleted).toHaveBeenCalledTimes(1)
-    expect(onCompleted).toHaveBeenCalledWith('12')
+    expect(onCompleted).toHaveBeenCalledWith(['1', '2'])
   })
 
   test('should allow default value', async () => {
-    render(renderInput({ numOfInputs: 2, defaultValue: '12' }))
+    render(renderInput({ numOfInputs: 2, defaultValue: ['1', '2'] }))
     const inputs = screen.getAllByRole('textbox')
 
     expect(inputs[0]).toHaveValue('1')

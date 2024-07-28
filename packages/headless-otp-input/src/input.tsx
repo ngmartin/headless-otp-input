@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { InputProvider, useInputContext } from './input-context'
 
 type RootProps = {
-  defaultValue?: string
+  defaultValue?: string[]
   blurOnCompleted?: boolean
   value?: string[]
   transform?: (value: string) => string
   onChange?: (values: string[]) => void
-  onCompleted?: (value: string) => void
+  onCompleted?: (value: string[]) => void
 } & Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'>
 
 function Root(props: RootProps) {
@@ -31,7 +31,7 @@ function Root(props: RootProps) {
     // if the component is not controlled, we need to set the default values
     if (!value) {
       const initialValues = defaultValue
-        ? defaultValue.split('').slice(0, numberOfInputs)
+        ? defaultValue.slice(0, numberOfInputs)
         : new Array<string>(numberOfInputs).fill('')
       setInputValues(initialValues)
     }
@@ -151,7 +151,7 @@ function Root(props: RootProps) {
     setInputValues(newInputValues)
 
     if (hasCompleted(newInputValues)) {
-      onCompleted(newInputValues.join(''))
+      onCompleted(newInputValues)
       if (blurOnCompleted) {
         el.blur()
         return

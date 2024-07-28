@@ -5,7 +5,12 @@ import { renderInput } from './utils'
 
 describe('Delete Character Testing', () => {
   test('should delete the character on backspace', async () => {
-    render(renderInput({ numOfInputs: 6, defaultValue: '123456' }))
+    render(
+      renderInput({
+        numOfInputs: 6,
+        defaultValue: ['1', '2', '3', '4', '5', '6'],
+      })
+    )
     const inputs = screen.getAllByRole('textbox')
 
     await userEvent.click(inputs[0])
@@ -15,7 +20,7 @@ describe('Delete Character Testing', () => {
   })
 
   test('should allow pressing backspace on the empty input', async () => {
-    render(renderInput({ numOfInputs: 6, defaultValue: '12' }))
+    render(renderInput({ numOfInputs: 6, defaultValue: ['1', '2'] }))
     const inputs = screen.getAllByRole('textbox')
 
     await userEvent.click(inputs[2])

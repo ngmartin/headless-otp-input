@@ -54,7 +54,12 @@ describe('Navigation Testing', () => {
   })
 
   test('should select text on focus', async () => {
-    render(renderInput({ numOfInputs: 6, defaultValue: '123456' }))
+    render(
+      renderInput({
+        numOfInputs: 6,
+        defaultValue: ['1', '2', '3', '4', '5', '6'],
+      })
+    )
     const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
 
     await userEvent.click(inputs[0])

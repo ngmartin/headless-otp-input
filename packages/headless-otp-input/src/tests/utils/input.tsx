@@ -3,11 +3,11 @@ import * as Input from '../../index'
 
 type Props = {
   numOfInputs?: number
-  defaultValue?: string
+  defaultValue?: string[]
   blurOnCompleted?: boolean
   controlled?: string[]
   transform?: (value: string) => string
-  onCompleted?: (value: string) => void
+  onCompleted?: (value: string[]) => void
 }
 
 function InputWrapper({
