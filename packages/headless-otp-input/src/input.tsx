@@ -4,26 +4,35 @@ import { InputProvider, useInputContext } from './input-context'
 type RootProps = {
   defaultValue?: string
   blurOnCompleted?: boolean
+  value?: string[]
+  onChange?: (values: string[]) => void
   onCompleted?: (value: string) => void
-} & React.HTMLAttributes<HTMLDivElement>
+} & Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'>
 
 function Root(props: RootProps) {
   const {
-    onCompleted = () => {},
     blurOnCompleted = false,
     defaultValue,
+    value,
+    onChange = () => {},
+    onCompleted = () => {},
     ...restProps
   } = props
 
   const [inputRefs, setInputRefs] = useState<HTMLInputElement[]>([])
-  const [inputValues, setInputValues] = useState<string[]>([])
+  const [internalValues, setInternalValues] = useState<string[]>([])
   const numberOfInputs = inputRefs.length
+  const inputValues = value || internalValues
+  const setInputValues = value ? onChange : setInternalValues
 
   useEffect(() => {
-    const initialValues = defaultValue
-      ? defaultValue.split('').slice(0, numberOfInputs)
-      : new Array<string>(numberOfInputs).fill('')
-    setInputValues(initialValues)
+    // if the component is not controlled, we need to set the default values
+    if (!value) {
+      const initialValues = defaultValue
+        ? defaultValue.split('').slice(0, numberOfInputs)
+        : new Array<string>(numberOfInputs).fill('')
+      setInputValues(initialValues)
+    }
     // defaultValue is uncontrolled prop, we don't need to re-run if defaultValue changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numberOfInputs])
@@ -89,7 +98,7 @@ function Root(props: RootProps) {
 
   const deleteValue = (el: HTMLInputElement) => {
     const index = getIndex(el)
-    setInputValues((prev) => prev.map((value, i) => (i === index ? '' : value)))
+    setInputValues(inputValues.map((value, i) => (i === index ? '' : value)))
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
