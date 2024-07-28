@@ -1,69 +1,50 @@
-import React, { useEffect, useRef, useState, useId, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { InputProvider, useInputContext } from './input-context'
 
 type RootProps = {
   blurOnCompleted?: boolean
   onCompleted?: (value: string) => void
 } & React.HTMLAttributes<HTMLDivElement>
-type ElementValues = Record<string, string>
 
 function Root(props: RootProps) {
-  const {
-    onCompleted = () => {},
-    blurOnCompleted = true,
-    children,
-    ...restProps
-  } = props
-  const elements: HTMLInputElement[] = []
+  const { onCompleted = () => {}, blurOnCompleted = true, ...restProps } = props
 
-  const [elementValues, setElementValues] = useState<ElementValues>({})
+  const [inputRefs, setInputRefs] = useState<HTMLInputElement[]>([])
+  const [inputValues, setInputValues] = useState<string[]>([])
+  const numberOfInputs = inputRefs.length
 
-  const register = useCallback((id: string) => {
-    setElementValues((prev) => ({ ...prev, [id]: '' }))
+  const register = useCallback((el: HTMLInputElement) => {
+    setInputRefs((prev) => [...prev, el])
   }, [])
 
-  const unregister = useCallback((id: string) => {
-    setElementValues((prev) => {
-      const curr = { ...prev }
-      delete curr[id]
-      return curr
-    })
+  const unregister = useCallback((el: HTMLInputElement) => {
+    setInputRefs((prev) => prev.filter((item) => item !== el))
   }, [])
 
-  const orderRegister = (el: HTMLInputElement) => {
-    const index = elements.indexOf(el)
-    if (index < 0) {
-      elements.push(el)
-      return elements.length - 1
-    }
-    return index
-  }
-
-  const getIndexByElement = (el: HTMLInputElement) => {
-    const index = elements.indexOf(el)
-    if (index < 0) {
-      throw new Error('Input index not found')
-    }
-    return index
-  }
+  const getIndex = useCallback(
+    (el?: HTMLInputElement | null) => {
+      if (!el) return -1
+      return inputRefs.indexOf(el)
+    },
+    [inputRefs]
+  )
 
   const getNextElement = (el: HTMLInputElement) => {
-    const index = getIndexByElement(el)
-    const boundedIndex = Math.min(index + 1, elements.length - 1)
-    return elements[boundedIndex]
+    const index = getIndex(el)
+    const boundedIndex = Math.min(index + 1, numberOfInputs - 1)
+    return inputRefs[boundedIndex]
   }
 
   const getPreviousElement = (el: HTMLInputElement) => {
-    const index = getIndexByElement(el)
+    const index = getIndex(el)
     const boundedIndex = Math.max(index - 1, 0)
-    return elements[boundedIndex]
+    return inputRefs[boundedIndex]
   }
 
-  const hasCompleted = (values: ElementValues) =>
-    Object.values(values).every((value) => value)
+  const hasCompleted = (values: string[]) =>
+    values.filter(Boolean).length === inputRefs.length
 
-  const elementValuesToString = (values: ElementValues) =>
-    elements.map((el) => values[el.id]).join('')
+  const elementValuesToString = (values: string[]) => values.join('')
 
   const selectElement = (el: HTMLInputElement) => {
     requestAnimationFrame(() => el.select())
@@ -82,19 +63,20 @@ function Root(props: RootProps) {
   }
 
   const focusFirst = () => {
-    const el = elements[0]
+    const el = inputRefs[0]
     el.focus()
     selectElement(el)
   }
 
   const focusLast = () => {
-    const el = elements[elements.length - 1]
+    const el = inputRefs[numberOfInputs - 1]
     el.focus()
     selectElement(el)
   }
 
   const deleteValue = (el: HTMLInputElement) => {
-    setElementValues((prev) => ({ ...prev, [el.id]: '' }))
+    const index = getIndex(el)
+    setInputValues((prev) => prev.map((value, i) => (i === index ? '' : value)))
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -122,29 +104,30 @@ function Root(props: RootProps) {
 
   const handleInput = (event: React.FormEvent<HTMLInputElement>) => {
     const el = event.currentTarget
-    const { id, value } = el
+    const { value } = el
 
     if (!value) {
-      setElementValues((prev) => ({ ...prev, [id]: '' }))
+      deleteValue(el)
       return
     }
 
-    const newElementValues = { ...elementValues }
-    const startIndex = elements.indexOf(el)
-    const endIndex = Math.min(startIndex + value.length, elements.length)
-    elements.slice(startIndex, endIndex).forEach((el, index) => {
-      newElementValues[el.id] = value[index]
-    })
-    setElementValues(newElementValues)
+    const newInputValues = [...inputValues]
+    const startIndex = getIndex(el)
+    const endIndex = Math.min(startIndex + value.length, numberOfInputs) - 1
 
-    if (hasCompleted(newElementValues)) {
-      onCompleted(elementValuesToString(newElementValues))
+    for (let i = startIndex; i <= endIndex; i++) {
+      newInputValues[i] = value[i - startIndex]
+    }
+    setInputValues(newInputValues)
+
+    if (hasCompleted(newInputValues)) {
+      onCompleted(elementValuesToString(newInputValues))
       if (blurOnCompleted) {
         el.blur()
         return
       }
     }
-    focusNext(elements[endIndex - 1])
+    focusNext(inputRefs[endIndex])
   }
 
   const handleMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
@@ -159,14 +142,14 @@ function Root(props: RootProps) {
       value={{
         register,
         unregister,
-        orderRegister,
-        values: elementValues,
+        getIndex,
+        values: inputValues,
         onKeyDown: handleKeyDown,
         onInput: handleInput,
         onMouseDown: handleMouseDown,
       }}
     >
-      <div {...restProps}>{children}</div>
+      <div {...restProps} />
     </InputProvider>
   )
 }
@@ -174,30 +157,26 @@ function Root(props: RootProps) {
 type FieldProps = React.InputHTMLAttributes<HTMLInputElement>
 
 function Field(props: FieldProps) {
-  const id = useId()
   const ref = useRef<HTMLInputElement>(null)
   const {
     register,
     unregister,
-    orderRegister,
+    getIndex,
     values,
     onKeyDown,
     onInput,
     onMouseDown,
   } = useInputContext()
-  const [index, setIndex] = useState(0)
+  const index = getIndex(ref.current)
 
   useEffect(() => {
-    if (ref.current) {
-      const order = orderRegister(ref.current)
-      setIndex(order)
+    const el = ref.current
+    if (el) register(el)
+
+    return () => {
+      if (el) unregister(el)
     }
-  }, [orderRegister])
-
-  useEffect(() => {
-    register(id)
-    return () => unregister(id)
-  }, [id, register, unregister])
+  }, [register, unregister])
 
   return (
     <input
@@ -205,9 +184,8 @@ function Field(props: FieldProps) {
       type="text"
       autoComplete="one-time-code"
       inputMode="numeric"
-      id={id}
       ref={ref}
-      value={values[id] || ''}
+      value={values[index] || ''}
       onKeyDown={onKeyDown}
       onInput={onInput}
       onMouseDown={onMouseDown}

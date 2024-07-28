@@ -1,10 +1,10 @@
 import React, { createContext, useContext } from 'react'
 
 type ContextValue = {
-  register: (id: string) => void
-  unregister: (id: string) => void
-  orderRegister: (el: HTMLInputElement) => number
-  values: Record<string, string>
+  register: (el: HTMLInputElement) => void
+  unregister: (el: HTMLInputElement) => void
+  getIndex: (el?: HTMLInputElement | null) => number
+  values: string[]
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
   onInput: (event: React.FormEvent<HTMLInputElement>) => void
   onMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
@@ -13,10 +13,10 @@ type ContextValue = {
 const noop = () => {}
 
 const initContextValue: ContextValue = {
-  values: {},
+  values: [],
   register: noop,
   unregister: noop,
-  orderRegister: () => 0,
+  getIndex: () => -1,
   onKeyDown: noop,
   onInput: noop,
   onMouseDown: noop,
