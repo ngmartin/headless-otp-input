@@ -5,6 +5,7 @@ type RootProps = {
   defaultValue?: string
   blurOnCompleted?: boolean
   value?: string[]
+  transform?: (value: string) => string
   onChange?: (values: string[]) => void
   onCompleted?: (value: string) => void
 } & Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'>
@@ -14,6 +15,7 @@ function Root(props: RootProps) {
     blurOnCompleted = false,
     defaultValue,
     value,
+    transform = (value) => value,
     onChange = () => {},
     onCompleted = () => {},
     ...restProps
@@ -134,11 +136,17 @@ function Root(props: RootProps) {
     }
 
     const newInputValues = [...inputValues]
-    const startIndex = getIndex(el)
-    const endIndex = Math.min(startIndex + value.length, numberOfInputs) - 1
+    let index = getIndex(el)
 
-    for (let i = startIndex; i <= endIndex; i++) {
-      newInputValues[i] = value[i - startIndex]
+    for (const char of value) {
+      const transformedChar = transform(char)
+      if (transformedChar) {
+        newInputValues[index] = transformedChar
+        index += 1
+      }
+      if (index >= numberOfInputs) {
+        break
+      }
     }
     setInputValues(newInputValues)
 
@@ -149,7 +157,10 @@ function Root(props: RootProps) {
         return
       }
     }
-    focusNext(inputRefs[endIndex])
+
+    if (index > 0) {
+      focusNext(inputRefs[index - 1])
+    }
   }
 
   const handleMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
