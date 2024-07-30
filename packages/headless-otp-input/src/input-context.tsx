@@ -5,9 +5,9 @@ type ContextValue = {
   unregister: (el: HTMLInputElement) => void
   getIndex: (el?: HTMLInputElement | null) => number
   values: string[]
-  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
-  onInput: (event: React.FormEvent<HTMLInputElement>) => void
-  onMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
+  handleKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  handleInput: (event: React.FormEvent<HTMLInputElement>) => void
+  handleMouseDown: (event: React.MouseEvent<HTMLInputElement>) => void
 }
 
 const noop = () => {}
@@ -17,9 +17,9 @@ const initContextValue: ContextValue = {
   register: noop,
   unregister: noop,
   getIndex: () => -1,
-  onKeyDown: noop,
-  onInput: noop,
-  onMouseDown: noop,
+  handleKeyDown: noop,
+  handleInput: noop,
+  handleMouseDown: noop,
 }
 
 const InputContext = createContext<ContextValue>(initContextValue)

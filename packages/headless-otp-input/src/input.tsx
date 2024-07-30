@@ -1,5 +1,12 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  forwardRef,
+} from 'react'
 import { InputProvider, useInputContext } from './input-context'
+import { composeRefs, composeEventHandlers } from './utils'
 
 type RootProps = {
   defaultValue?: string[]
@@ -10,7 +17,7 @@ type RootProps = {
   onCompleted?: (value: string[]) => void
 } & Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'>
 
-function Root(props: RootProps) {
+const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
   const {
     blurOnCompleted = false,
     defaultValue,
@@ -144,54 +151,56 @@ function Root(props: RootProps) {
         unregister,
         getIndex,
         values: inputValues,
-        onKeyDown: handleKeyDown,
-        onInput: handleInput,
-        onMouseDown: handleMouseDown,
+        handleKeyDown,
+        handleInput,
+        handleMouseDown,
       }}
     >
-      <div {...restProps} />
+      <div {...restProps} ref={forwardedRef} />
     </InputProvider>
   )
-}
+})
 
 type FieldProps = React.InputHTMLAttributes<HTMLInputElement>
 
-function Field(props: FieldProps) {
-  const ref = useRef<HTMLInputElement>(null)
-  const {
-    register,
-    unregister,
-    getIndex,
-    values,
-    onKeyDown,
-    onInput,
-    onMouseDown,
-  } = useInputContext()
-  const index = getIndex(ref.current)
+const Field = forwardRef<HTMLInputElement, FieldProps>(
+  (props, forwardedRef) => {
+    const ref = useRef<HTMLInputElement>(null)
+    const {
+      register,
+      unregister,
+      getIndex,
+      values,
+      handleKeyDown,
+      handleInput,
+      handleMouseDown,
+    } = useInputContext()
+    const index = getIndex(ref.current)
 
-  useEffect(() => {
-    const el = ref.current
-    if (el) register(el)
+    useEffect(() => {
+      const el = ref.current
+      if (el) register(el)
 
-    return () => {
-      if (el) unregister(el)
-    }
-  }, [register, unregister])
+      return () => {
+        if (el) unregister(el)
+      }
+    }, [register, unregister])
 
-  return (
-    <input
-      aria-label={`Please enter OTP character ${index + 1}`}
-      type="text"
-      autoComplete="one-time-code"
-      inputMode="numeric"
-      ref={ref}
-      value={values[index] || ''}
-      onKeyDown={onKeyDown}
-      onInput={onInput}
-      onMouseDown={onMouseDown}
-      {...props}
-    />
-  )
-}
+    return (
+      <input
+        aria-label={`Please enter OTP character ${index + 1}`}
+        type="text"
+        autoComplete="one-time-code"
+        inputMode="numeric"
+        value={values[index] || ''}
+        {...props}
+        onKeyDown={composeEventHandlers(props.onKeyDown, handleKeyDown)}
+        onInput={composeEventHandlers(props.onInput, handleInput)}
+        onMouseDown={composeEventHandlers(props.onMouseDown, handleMouseDown)}
+        ref={composeRefs(ref, forwardedRef)}
+      />
+    )
+  }
+)
 
 export { Root, Field }
