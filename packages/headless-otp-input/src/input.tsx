@@ -55,89 +55,59 @@ function Root(props: RootProps) {
     [inputRefs]
   )
 
-  const getNextElement = (el: HTMLInputElement) => {
-    const index = getIndex(el)
-    const boundedIndex = Math.min(index + 1, numberOfInputs - 1)
-    return inputRefs[boundedIndex]
-  }
-
-  const getPreviousElement = (el: HTMLInputElement) => {
-    const index = getIndex(el)
-    const boundedIndex = Math.max(index - 1, 0)
-    return inputRefs[boundedIndex]
-  }
-
   const hasCompleted = (values: string[]) =>
-    values.filter(Boolean).length === inputRefs.length
+    values.filter(Boolean).length === numberOfInputs
 
-  const selectElement = (el: HTMLInputElement) => {
+  const select = (el: HTMLInputElement) => {
     requestAnimationFrame(() => el.select())
   }
 
-  const focusPrevious = (el: HTMLInputElement) => {
-    const prevEl = getPreviousElement(el)
-    prevEl.focus()
-    selectElement(prevEl)
+  const focus = (index: number) => {
+    const boundedIndex = Math.min(Math.max(index, 0), numberOfInputs - 1)
+    const input = inputRefs[boundedIndex]
+    input.focus()
+    select(input)
   }
 
-  const focusNext = (el: HTMLInputElement) => {
-    const nextEl = getNextElement(el)
-    nextEl.focus()
-    selectElement(nextEl)
-  }
-
-  const focusFirst = () => {
-    const el = inputRefs[0]
-    el.focus()
-    selectElement(el)
-  }
-
-  const focusLast = () => {
-    const el = inputRefs[numberOfInputs - 1]
-    el.focus()
-    selectElement(el)
-  }
-
-  const deleteValue = (el: HTMLInputElement) => {
-    const index = getIndex(el)
+  const deleteAt = (index: number) => {
     setInputValues(inputValues.map((value, i) => (i === index ? '' : value)))
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const el = event.currentTarget
-    if (event.key === 'Backspace') {
-      // press delete where the input is empty
-      if (!el.value) {
-        deleteValue(getPreviousElement(el))
-        focusPrevious(el)
-      }
+    const index = getIndex(el)
+
+    // press delete where the input is empty
+    if (event.key === 'Backspace' && !el.value) {
+      event.preventDefault()
+      deleteAt(index - 1)
+      focus(index - 1)
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault()
-      focusPrevious(el)
+      focus(index - 1)
     } else if (event.key === 'ArrowRight') {
       event.preventDefault()
-      focusNext(el)
+      focus(index + 1)
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
-      focusFirst()
+      focus(0)
     } else if (event.key === 'ArrowDown') {
       event.preventDefault()
-      focusLast()
+      focus(numberOfInputs - 1)
     }
   }
 
   const handleInput = (event: React.FormEvent<HTMLInputElement>) => {
     const el = event.currentTarget
     const { value } = el
+    let index = getIndex(el)
 
     if (!value) {
-      deleteValue(el)
+      deleteAt(index)
       return
     }
 
     const newInputValues = [...inputValues]
-    let index = getIndex(el)
-
     for (const char of value) {
       const transformedChar = transform(char)
       if (transformedChar) {
@@ -157,16 +127,13 @@ function Root(props: RootProps) {
         return
       }
     }
-
-    if (index > 0) {
-      focusNext(inputRefs[index - 1])
-    }
+    focus(index)
   }
 
   const handleMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
     const el = event.currentTarget
     if (el.value) {
-      selectElement(el)
+      select(el)
     }
   }
 
