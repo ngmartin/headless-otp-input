@@ -31,6 +31,8 @@ function App() {
 
 The example below uses `tailwindcss`.
 
+<img width="476" alt="Screenshot 2024-08-01 at 23 04 19" src="https://github.com/user-attachments/assets/93eb04d6-362d-4be6-aa5b-517b1177e473">
+
 ```tsx
 "use client";
 import * as OTPInput from "headless-otp-input";
