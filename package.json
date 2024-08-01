@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "author": "TuanNT <martingk111@gmail.com>",
-  "description": "",
+  "description": "The unstyled, fully customizable, and accessible OTP input component for React.",
   "workspaces": [
     "packages/*",
     "apps/*"
