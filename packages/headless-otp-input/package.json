@@ -1,12 +1,21 @@
 {
   "name": "headless-otp-input",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": "TuanNT <martingk111@gmail.com>",
   "description": "The unstyled, fully customizable, and accessible OTP input component for React.",
   "license": "MIT",
+  "homepage": "https://github.com/ngmartin/headless-otp-input",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngmartin/headless-otp-input.git",
+    "directory": "packages/headless-otp-input"
+  },
+  "bugs": {
+    "url": "https://github.com/ngmartin/headless-otp-input/issues"
+  },
   "type": "module",
   "scripts": {
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --skipLibCheck",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
