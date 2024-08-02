@@ -14,7 +14,7 @@
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "test": "turbo run test",
-    "release": "pnpm build && pnpm changeset publish"
+    "release": "pnpm build && cp ./README.md ./packages/headless-otp-input/README.md && pnpm changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
