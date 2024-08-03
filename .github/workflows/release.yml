@@ -27,6 +27,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Coverage Reports
+        run: pnpm coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
