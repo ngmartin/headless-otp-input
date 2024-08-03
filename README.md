@@ -1,6 +1,8 @@
 # The unstyled, fully customizable, and accessible OTP input component for React.
 
 [![codecov](https://codecov.io/github/ngmartin/headless-otp-input/graph/badge.svg?token=77A38WTHEV)](https://codecov.io/github/ngmartin/headless-otp-input)
+[![npm bundle size](https://img.shields.io/bundlephobia/min/headless-otp-input)](https://www.npmjs.com/package/headless-otp-input)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/headless-otp-input)](https://www.npmjs.com/package/headless-otp-input)
 
 ## Installation
 
