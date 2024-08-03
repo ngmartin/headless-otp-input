@@ -1,5 +1,7 @@
 # The unstyled, fully customizable, and accessible OTP input component for React.
 
+[![codecov](https://codecov.io/github/ngmartin/headless-otp-input/graph/badge.svg?token=77A38WTHEV)](https://codecov.io/github/ngmartin/headless-otp-input)
+
 ## Installation
 
 ```bash
