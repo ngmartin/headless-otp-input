@@ -1,5 +1,11 @@
 # headless-otp-input
 
+## 1.0.1
+
+### Patch Changes
+
+- e5ebce3: fix: input method editor(IME) causes double characters
+
 ## 1.0.0
 
 ### Major Changes
