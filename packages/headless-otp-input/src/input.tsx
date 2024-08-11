@@ -28,6 +28,7 @@ const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
     ...restProps
   } = props
 
+  const hiddenInputRef = useRef<HTMLInputElement>(null)
   const [inputRefs, setInputRefs] = useState<HTMLInputElement[]>([])
   const [internalValues, setInternalValues] = useState<string[]>([])
   const numberOfInputs = inputRefs.length
@@ -134,7 +135,14 @@ const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
         return
       }
     }
-    focus(index)
+
+    const inputEvent = event.nativeEvent as InputEvent
+    if (inputEvent.isComposing) {
+      hiddenInputRef.current?.focus()
+      setTimeout(() => focus(index), 50)
+    } else {
+      focus(index)
+    }
   }
 
   const handleMouseDown = (event: React.MouseEvent<HTMLInputElement>) => {
@@ -157,6 +165,13 @@ const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
       }}
     >
       <div {...restProps} ref={forwardedRef} />
+      <input
+        ref={hiddenInputRef}
+        aria-hidden="true"
+        style={{ position: 'absolute', opacity: 0, left: -9999, top: -9999 }}
+        tabIndex={-1}
+        onFocus={(event) => (event.target.value = '')}
+      />
     </InputProvider>
   )
 })
