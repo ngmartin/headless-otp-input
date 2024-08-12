@@ -1,6 +1,6 @@
 {
   "name": "headless-otp-input",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "author": "TuanNT <martingk111@gmail.com>",
   "description": "The unstyled, fully customizable, and accessible OTP input component for React.",
   "license": "MIT",

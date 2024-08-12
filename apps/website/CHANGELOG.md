@@ -1,5 +1,12 @@
 # website
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [7699722]
+  - headless-otp-input@1.1.0
+
 ## 0.1.3
 
 ### Patch Changes
