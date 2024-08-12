@@ -6,6 +6,7 @@ type Props = {
   defaultValue?: string[]
   blurOnCompleted?: boolean
   controlled?: string[]
+  autoFocus?: boolean
   transform?: (value: string) => string
   onCompleted?: (value: string[]) => void
 }
@@ -15,6 +16,7 @@ function InputWrapper({
   defaultValue,
   blurOnCompleted,
   controlled,
+  autoFocus,
   transform,
   onCompleted,
 }: Props = {}) {
@@ -24,6 +26,7 @@ function InputWrapper({
     <Input.Root
       defaultValue={defaultValue}
       blurOnCompleted={blurOnCompleted}
+      autoFocus={autoFocus}
       transform={transform}
       onCompleted={onCompleted}
       value={controlled ? value : undefined}

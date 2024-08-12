@@ -18,6 +18,7 @@ function App() {
 
       <OTPInput.Root
         className="flex justify-center items-center gap-4 my-8"
+        autoFocus
         value={value}
         onChange={setValue}
         onCompleted={(value) => console.log("onCompleted:", value)}
