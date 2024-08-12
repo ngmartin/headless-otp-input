@@ -1,5 +1,11 @@
 # headless-otp-input
 
+## 1.1.0
+
+### Minor Changes
+
+- 7699722: feat: auto focus
+
 ## 1.0.1
 
 ### Patch Changes
