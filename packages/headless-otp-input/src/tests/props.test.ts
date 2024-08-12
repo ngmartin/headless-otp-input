@@ -81,4 +81,11 @@ describe('Props Testing', () => {
     expect(inputs[0]).toHaveValue('a')
     expect(inputs[1]).toHaveValue('a')
   })
+
+  test('should auto focus on first input', async () => {
+    render(renderInput({ numOfInputs: 2, autoFocus: true }))
+    const inputs = screen.getAllByRole('textbox')
+
+    expect(inputs[0]).toHaveFocus()
+  })
 })

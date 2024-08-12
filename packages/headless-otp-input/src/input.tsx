@@ -11,6 +11,7 @@ import { composeRefs, composeEventHandlers } from './utils'
 type RootProps = {
   defaultValue?: string[]
   blurOnCompleted?: boolean
+  autoFocus?: boolean
   value?: string[]
   transform?: (value: string) => string
   onChange?: (values: string[]) => void
@@ -20,6 +21,7 @@ type RootProps = {
 const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
   const {
     blurOnCompleted = false,
+    autoFocus = false,
     defaultValue,
     value,
     transform = (value) => value,
@@ -46,6 +48,13 @@ const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
     // defaultValue is uncontrolled prop, we don't need to re-run if defaultValue changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numberOfInputs])
+
+  const firstInput = inputRefs[0]
+  useEffect(() => {
+    if (autoFocus) {
+      firstInput?.focus()
+    }
+  }, [autoFocus, firstInput])
 
   const register = useCallback((el: HTMLInputElement) => {
     setInputRefs((prev) => [...prev, el])
