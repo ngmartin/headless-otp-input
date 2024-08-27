@@ -1,4 +1,4 @@
-import type { Ref, MutableRefObject } from 'react'
+import type { MutableRefObject, Ref } from 'react'
 
 function composeRefs<T>(...refs: (Ref<T> | undefined)[]) {
   return (node: T) =>
