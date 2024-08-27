@@ -6,7 +6,7 @@ import React, {
   forwardRef,
 } from 'react'
 import { InputProvider, useInputContext } from './input-context'
-import { composeRefs, composeEventHandlers } from './utils'
+import { composeEventHandlers, composeRefs } from './utils'
 
 type RootProps = {
   defaultValue?: string[]
@@ -37,6 +37,7 @@ const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
   const inputValues = value || internalValues
   const setInputValues = value ? onChange : setInternalValues
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: defaultValue is uncontrolled prop, we don't need to re-run if defaultValue changes
   useEffect(() => {
     // if the component is not controlled, we need to set the default values
     if (!value) {
@@ -45,8 +46,6 @@ const Root = forwardRef<HTMLDivElement, RootProps>((props, forwardedRef) => {
         : new Array<string>(numberOfInputs).fill('')
       setInputValues(initialValues)
     }
-    // defaultValue is uncontrolled prop, we don't need to re-run if defaultValue changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numberOfInputs])
 
   const firstInput = inputRefs[0]

@@ -1,6 +1,6 @@
-import { test, describe, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { describe, expect, test } from 'vitest'
 import { renderInput } from './utils'
 
 describe('Delete Character Testing', () => {

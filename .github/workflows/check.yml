@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: ESLint
+      - name: Lint
         run: pnpm lint
 
       - name: Type check
