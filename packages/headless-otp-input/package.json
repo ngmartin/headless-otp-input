@@ -32,13 +32,13 @@
     "@testing-library/user-event": "^14.5.2",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
-    "@vitest/coverage-v8": "^2.0.3",
-    "happy-dom": "^14.12.3",
+    "@vitest/coverage-v8": "^2.1.8",
+    "happy-dom": "^15.11.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tsup": "^8.2.4",
+    "tsup": "^8.3.5",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.3"
+    "vitest": "^2.1.8"
   },
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0",
