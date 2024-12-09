@@ -21,17 +21,11 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage"
   },
-  "keywords": [
-    "react",
-    "otp",
-    "input"
-  ],
+  "keywords": ["react", "otp", "input"],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
